@@ -1,7 +1,7 @@
 import logging
 import numpy as np
 import os
-from fastapi import FastAPI, HTTPException, Query, status, Response
+from fastapi import FastAPI, HTTPException, Query, status, Response, Depends
 from pathlib import Path
 from src.model import LogisticRegression
 from src.preprocessing import Preprocessor
@@ -16,6 +16,22 @@ def load_model():
     if not os.path.exists(MODEL_PATH):
         return None
     return np.load(MODEL_PATH)
+
+def get_latest_model():
+    base_path = Path(__file__).resolve().parent.parent / "models"
+    model_files = list(base_path.glob("*.npz"))
+
+    if not model_files:
+        raise HTTPException(status_code=404, detail="No model files found in /models")
+
+    latest_model_path = max(model_files, key=lambda p: p.stat().st_mtime)
+
+    try:
+        return {"data": np.load(latest_model_path), "path": latest_model_path}
+    except Exception as e:
+        logger.error("Latest model file not found. Error: {error}".format(error=(e)))
+        raise HTTPException(status_code=500, detail=f"Failed to load model")
+
 
 @app.get("/health")
 def health_check(response: Response):
@@ -83,3 +99,19 @@ def train_model(response: Response, seed: int = Query(42, description="The rando
         logger.error(f"Training failed: {str(e)}")
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
         return {"error": "Training failed", "details": str(e)}
+
+@app.get("/model/info")
+def get_model_info(model: dict = Depends(get_latest_model)):
+    model_data = model["data"]
+
+    return {
+        "active_model": model["path"].name,
+        "parameters": {
+            "weights": model_data['weights'].tolist(),
+            "bias": float(model_data['bias'])
+        },
+        "normalization": {
+            "mean": model_data['mean'].tolist(),
+            "std": model_data['std'].tolist()
+        }
+    }
