@@ -2,6 +2,25 @@
 
 This is an attempt to write a logistic regression model from scratch using only Python3.14 and numpy for the data processing and prediction.
 This was written using the [Raisin binary classification dataset](https://www.kaggle.com/datasets/nimapourmoradi/raisin-binary-classification/data)
+## How to run the app
+Simply run `docker compose up --build` in the project root and the app will start on port 8000
+
+## API
+The project includes a FastAPI wrapper that serves the model for real-time inference and remote training.
+
+The API will be available at: http://127.0.0.1:8000
+
+For documentation access go to: http://127.0.0.1:8000/docs to test the endpoints via Swagger.
+
+Trained models and experiment logs are automatically synced between the container and your local `./models` and `./experiments` folders.
+
+## In case of emergency
+If you find that the container starts but you still can't see the models, it might be due to cached volumes. If you changed your folder structure after running Docker for the first time, Docker sometimes holds onto an old, empty version of that volume.
+
+If things get weird, run this to "nuke" the cache and start fresh:
+```bash
+docker compose down -v && docker compose up --build
+```
 ## Explanation of files
 <details>
     <summary>data_loader.py</summary>
@@ -61,4 +80,14 @@ The ExperimentTracker ensures that every training run is documented by saving th
 * Seed: Seed used to ensure reproducibility
 
 </details>
+
+<details>
+    <summary>api.py</summary>
+
+This file sets up the API of the application by leveraging FastAPI. The method `get_model_resource` is used to get the latest model or get a selected model.
+</details>
+
+
+
+
 
