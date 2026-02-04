@@ -1,6 +1,11 @@
 import numpy as np
+from pathlib import Path
 
 from src.data_loader import DataLoader
+
+BASE_DIR = Path(__file__).resolve().parent
+
+DATA_PATH = BASE_DIR.parent / "data" / "raisin_dataset.csv"
 
 class Preprocessor:
     def __init__(self):
@@ -13,7 +18,7 @@ class Preprocessor:
         return (features - self.mean) / self.std
 
     def preprocess(self, seed):
-        data_loader = DataLoader("../data/raisin_dataset.csv")
+        data_loader = DataLoader(str(DATA_PATH))
         features, labels = data_loader.load()
         normalised_features = self.create_normalised_array(features)
 
