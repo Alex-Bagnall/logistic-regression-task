@@ -12,10 +12,12 @@ class Preprocessor:
         self.std = np.std(features, axis=0)
         return (features - self.mean) / self.std
 
-    def preprocess(self):
+    def preprocess(self, seed):
         data_loader = DataLoader("../data/raisin_dataset.csv")
         features, labels = data_loader.load()
         normalised_features = self.create_normalised_array(features)
+
+        np.random.seed(seed)
         indices = np.random.permutation(len(normalised_features))
         split = int(len(normalised_features) * 0.8)
 
@@ -27,4 +29,4 @@ class Preprocessor:
 
 if __name__ == "__main__":
     loader = Preprocessor()
-    loader.preprocess()
+    loader.preprocess(42)

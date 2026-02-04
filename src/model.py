@@ -1,4 +1,5 @@
 import numpy as np
+import logging
 
 from evaluation import Evaluation
 from src.preprocessing import Preprocessor
@@ -39,8 +40,11 @@ class LogisticRegression:
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    GLOBAL_SEED = 42
+
     preprocessor = Preprocessor()
-    features_train, features_test, labels_train, labels_test = preprocessor.preprocess()
+    features_train, features_test, labels_train, labels_test = preprocessor.preprocess(GLOBAL_SEED)
 
     model = LogisticRegression()
     model.fit(features_train, labels_train)
@@ -52,7 +56,7 @@ if __name__ == "__main__":
 
     tracker = ExperimentTracker()
 
-    experiment = tracker.log_experiment(
+    tracker.log_experiment(
         hyperparameters={
             "learning_rate": model.learning_rate,
             "epochs": model.epochs,
@@ -65,5 +69,6 @@ if __name__ == "__main__":
             "recall": prediction.recall(),
             "f1": prediction.f1()
         },
-        model_path="model.npz"
+        model_path="model.npz",
+        seed=GLOBAL_SEED
     )

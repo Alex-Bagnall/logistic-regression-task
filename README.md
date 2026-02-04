@@ -58,6 +58,7 @@ The ExperimentTracker ensures that every training run is documented by saving th
 * Metrics: The accuracy, precision, recall value, and F1 score calculated by the Evaluation class
 * Model path: The path to the model which was used
 * Metadata: The run_id which is a UUID and a timestamp
+* Seed: Seed used to ensure reproducibility
 
 </details>
 

@@ -11,7 +11,7 @@ class ExperimentTracker:
         self.experiments_dir = Path(experiments_dir)
         self.experiments_dir.mkdir(exist_ok=True)
 
-    def log_experiment(self, hyperparameters: dict, metrics: dict, model_path: str):
+    def log_experiment(self, hyperparameters: dict, metrics: dict, model_path: str, seed: int):
         run_id = str(uuid.uuid4())
 
         experiment = {
@@ -19,11 +19,13 @@ class ExperimentTracker:
             "timestamp": datetime.now().isoformat(),
             "hyperparameters": hyperparameters,
             "metrics": metrics,
-            "model_path": model_path
+            "model_path": model_path,
+            "seed": seed
         }
 
-        file_path = self.experiments_dir / "{run_id}.json".format(run_id=run_id)
+        file_path = self.experiments_dir / f"{run_id}.json"
+
         with open(file_path, "w") as f:
             json.dump(experiment, f, indent=2)
 
-        logger.info("Experiment saved: {file_path}".format(file_path=file_path))
+        logger.info(f"Experiment saved to: {file_path}")
