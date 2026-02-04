@@ -1,5 +1,6 @@
 import logging
 import numpy as np
+import time
 from fastapi import FastAPI, HTTPException, Query, status, Response, Depends
 from pathlib import Path
 from src.model import LogisticRegression
@@ -112,4 +113,33 @@ def get_model_info(model: dict = Depends(get_latest_model)):
             "mean": model_data['mean'].tolist(),
             "std": model_data['std'].tolist()
         }
+    }
+
+
+@app.get("/models")
+def list_all_models():
+    model_dir = Path(__file__).resolve().parent.parent / "models"
+
+    if not model_dir.exists():
+        return {"models": [], "count": 0}
+
+    model_list = []
+    for file in model_dir.glob("*.npz"):
+        stats = file.stat()
+        model_list.append({
+            "filename": file.name,
+            "created_at": time.ctime(stats.st_ctime),
+            "size_kb": round(stats.st_size / 1024, 2),
+            "is_latest": False
+        })
+
+    model_list.sort(key=lambda x: x["created_at"], reverse=True)
+
+    if model_list:
+        model_list[0]["is_latest"] = True
+
+    return {
+        "models": model_list,
+        "total_count": len(model_list),
+        "directory": str(model_dir.absolute())
     }
