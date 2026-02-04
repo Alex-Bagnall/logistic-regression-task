@@ -3,6 +3,7 @@ import logging
 
 from evaluation import Evaluation
 from src.preprocessing import Preprocessor
+from tracking import ExperimentTracker
 
 class LogisticRegression:
     def __init__(self, learning_rate=0.01, epochs=1000):
@@ -50,11 +51,26 @@ if __name__ == "__main__":
 
     model = LogisticRegression()
     model.fit(features_train, labels_train)
-    y_prediction = model.predict(features_test)
 
+    y_prediction = model.predict(features_test)
     prediction = Evaluation(y_prediction, labels_test)
+
     np.savez('../models/model.npz', weights=model.weights, bias=model.bias, mean=preprocessor.mean, std=preprocessor.std)
-    logger.info("Accuracy: {accuracy:.4f}".format(accuracy=prediction.accuracy()))
-    logger.info("Precision: {precision:.4f}".format(precision=prediction.precision()))
-    logger.info("Recall: {recall:.4f}".format(recall=prediction.recall()))
-    logger.info("F1: {f1value:.4f}".format(f1value=prediction.f1()))
+
+    tracker = ExperimentTracker()
+
+    experiment = tracker.log_experiment(
+        hyperparameters={
+            "learning_rate": model.learning_rate,
+            "epochs": model.epochs,
+            "lambda_reg": model.lambda_reg,
+            "threshold": model.threshold
+        },
+        metrics={
+            "accuracy": prediction.accuracy(),
+            "precision": prediction.precision(),
+            "recall": prediction.recall(),
+            "f1": prediction.f1()
+        },
+        model_path="model.npz"
+    )

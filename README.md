@@ -48,3 +48,16 @@ This includes:
 This class also throws exceptions if there are issues with the type, shape, or values; logging is also used to give the engineers better tracking.
 </details>
 
+<details>
+    <summary>tracking.py</summary>
+
+The `ExperimentTracker` class is the MLOps layer of the project. 
+The ExperimentTracker ensures that every training run is documented by saving the following to a folder:
+
+* Hyperparameters: Learning rate, epochs, lambda regularization, and threshold used
+* Metrics: The accuracy, precision, recall value, and F1 score calculated by the Evaluation class
+* Model path: The path to the model which was used
+* Metadata: The run_id which is a UUID and a timestamp
+
+</details>
+
