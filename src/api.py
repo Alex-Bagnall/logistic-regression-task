@@ -1,6 +1,5 @@
 import logging
 import numpy as np
-import os
 from fastapi import FastAPI, HTTPException, Query, status, Response, Depends
 from pathlib import Path
 from src.model import LogisticRegression
@@ -10,13 +9,6 @@ from src.tracking import ExperimentTracker
 
 app = FastAPI(title="Raisin Classification API")
 logger = logging.getLogger("uvicorn")
-MODEL_PATH = None
-
-def load_model():
-    if not os.path.exists(MODEL_PATH):
-        return None
-    return np.load(MODEL_PATH)
-
 def get_latest_model():
     base_path = Path(__file__).resolve().parent.parent / "models"
     model_files = list(base_path.glob("*.npz"))
@@ -34,20 +26,23 @@ def get_latest_model():
 
 
 @app.get("/health")
-def health_check(response: Response):
-    try:
-        model_data = load_model()
-        response.status = status.HTTP_200_OK
-        return { "message": "OK" }
-    except Exception as e:
-        logger.error("Model is missing: {exception}".format(exception=str(e)))
+def health_check(response: Response, model_resource: dict = Depends(get_latest_model)):
+    if model_resource is None:
+        logger.error("There is no model")
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-        return {"error": "Model artifact missing, please POST to /train endpoint"}
+        return {
+            "model_loaded": False,
+            "message": "No model artifact was found"
+        }
+
+    return {
+        "model_loaded": True,
+        "active_model": model_resource["path"].name,
+        "message": "OK"
+    }
 
 @app.post("/train")
 def train_model(response: Response, seed: int = Query(42, description="The random seed for reproducibility")):
-    global MODEL_PATH
-    logging.basicConfig(level=logging.INFO)
     try:
         preprocessor = Preprocessor()
         tracker = ExperimentTracker()
@@ -60,6 +55,11 @@ def train_model(response: Response, seed: int = Query(42, description="The rando
         y_prediction = model.predict(features_test)
         evaluator = Evaluation(y_prediction, labels_test)
 
+        model_dir = Path(__file__).resolve().parent.parent / "models"
+        model_dir.mkdir(exist_ok=True)
+
+        model_path = model_dir / "model_{seed}.npz".format(seed=seed)
+
         metrics = {
             "accuracy": evaluator.accuracy(),
             "precision": evaluator.precision(),
@@ -67,9 +67,7 @@ def train_model(response: Response, seed: int = Query(42, description="The rando
             "f1": evaluator.f1()
         }
 
-        MODEL_PATH = str(Path(__file__).resolve().parent.parent / "models" /  "model_{seed}.npz".format(seed=seed))
-
-        np.savez(MODEL_PATH,
+        np.savez(model_path,
                  weights=model.weights,
                  bias=model.bias,
                  mean=preprocessor.mean,
@@ -83,7 +81,7 @@ def train_model(response: Response, seed: int = Query(42, description="The rando
                 "seed": seed
             },
             metrics=metrics,
-            model_path=MODEL_PATH,
+            model_path=str(model_path),
             seed=seed
         )
 
@@ -92,7 +90,7 @@ def train_model(response: Response, seed: int = Query(42, description="The rando
             "experiment_id": run_id,
             "seed_used": seed,
             "metrics": metrics,
-            "artifact_path": MODEL_PATH
+            "artifact_path": model_path
         }
 
     except Exception as e:
