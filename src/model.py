@@ -1,9 +1,9 @@
 import numpy as np
 import logging
 
-from evaluation import Evaluation
+from src.evaluation import Evaluation
 from src.preprocessing import Preprocessor
-from tracking import ExperimentTracker
+from src.tracking import ExperimentTracker
 
 class LogisticRegression:
     def __init__(self, learning_rate=0.01, epochs=1000):
