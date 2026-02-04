@@ -31,7 +31,3 @@ class Preprocessor:
         labels_train = labels[indices[:split]]
         labels_test = labels[indices[split:]]
         return features_train, features_test, labels_train, labels_test
-
-if __name__ == "__main__":
-    loader = Preprocessor()
-    loader.preprocess(42)

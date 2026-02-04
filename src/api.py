@@ -38,18 +38,8 @@ def get_model_resource(seed: Optional[int] = None):
         raise HTTPException(status_code=500, detail="Failed to load model")
 
 @app.get("/health")
-def health_check(response: Response, model_resource: dict = Depends(get_model_resource)):
-    if model_resource is None:
-        logger.error("There is no model")
-        response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-        return {
-            "model_loaded": False,
-            "message": "No model artifact was found"
-        }
-
+def health_check():
     return {
-        "model_loaded": True,
-        "active_model": model_resource["path"].name,
         "message": "OK"
     }
 
@@ -126,7 +116,6 @@ def get_model_info(seed: Optional[int] = None):
             "std": model_data['std'].tolist()
         }
     }
-
 
 @app.get("/models")
 def list_all_models():

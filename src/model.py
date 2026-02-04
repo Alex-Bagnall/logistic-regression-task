@@ -1,9 +1,4 @@
 import numpy as np
-import logging
-
-from src.evaluation import Evaluation
-from src.preprocessing import Preprocessor
-from src.tracking import ExperimentTracker
 
 class LogisticRegression:
     def __init__(self, learning_rate=0.01, epochs=1000):
@@ -37,38 +32,3 @@ class LogisticRegression:
         z = features.dot(self.weights) + self.bias
         probabilities = self.sigmoid(z)
         return (probabilities >= self.threshold).astype(int)
-
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    GLOBAL_SEED = 42
-
-    preprocessor = Preprocessor()
-    features_train, features_test, labels_train, labels_test = preprocessor.preprocess(GLOBAL_SEED)
-
-    model = LogisticRegression()
-    model.fit(features_train, labels_train)
-
-    y_prediction = model.predict(features_test)
-    prediction = Evaluation(y_prediction, labels_test)
-
-    np.savez('../models/model.npz', weights=model.weights, bias=model.bias, mean=preprocessor.mean, std=preprocessor.std)
-
-    tracker = ExperimentTracker()
-
-    tracker.log_experiment(
-        hyperparameters={
-            "learning_rate": model.learning_rate,
-            "epochs": model.epochs,
-            "lambda_reg": model.lambda_reg,
-            "threshold": model.threshold
-        },
-        metrics={
-            "accuracy": prediction.accuracy(),
-            "precision": prediction.precision(),
-            "recall": prediction.recall(),
-            "f1": prediction.f1()
-        },
-        model_path="model.npz",
-        seed=GLOBAL_SEED
-    )

@@ -24,10 +24,10 @@ class ExperimentTracker:
             "seed": seed
         }
 
-        file_path = self.experiments_dir / f"{experiment_id}.json"
+        file_path = self.experiments_dir / "{experiment_id}.json".format(experiment_id=experiment_id)
 
         with open(file_path, "w") as f:
             json.dump(experiment, f, indent=2)
 
-        logger.info(f"Experiment saved to: {file_path}")
+        logger.info("Experiment saved to: {file_path}".format(file_path=file_path))
         return experiment_id

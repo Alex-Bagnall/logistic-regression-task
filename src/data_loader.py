@@ -4,7 +4,6 @@ import numpy as np
 class DataLoader:
     def __init__(self, file_path:str):
         self.file_path = file_path
-        pass
 
     def load(self):
         label_map = {"Kecimen": 0, "Besni": 1}
@@ -24,7 +23,3 @@ class DataLoader:
         labels = data[:, -1]
 
         return features, labels
-
-if __name__ == "__main__":
-    loader = DataLoader("../data/raisin_dataset.csv")
-    loader.load()
