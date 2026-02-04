@@ -2,3 +2,5 @@
 /models/
 *.npz
 /experiments/
+.venv/
+__pycache__/
