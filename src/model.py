@@ -1,5 +1,4 @@
 import numpy as np
-import logging
 
 from evaluation import Evaluation
 from src.preprocessing import Preprocessor
@@ -40,12 +39,6 @@ class LogisticRegression:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    )
-
-    logger = logging.getLogger(__name__)
     preprocessor = Preprocessor()
     features_train, features_test, labels_train, labels_test = preprocessor.preprocess()
 
