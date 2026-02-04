@@ -7,9 +7,10 @@ import uuid
 logger = logging.getLogger(__name__)
 
 class ExperimentTracker:
-    def __init__(self, experiments_dir="../experiments"):
-        self.experiments_dir = Path(experiments_dir)
-        self.experiments_dir.mkdir(exist_ok=True)
+    def __init__(self):
+        self.base_dir = Path(__file__).resolve().parent.parent
+        self.experiments_dir = self.base_dir / "experiments"
+        self.experiments_dir.mkdir(parents=True, exist_ok=True)
 
     def log_experiment(self, hyperparameters: dict, metrics: dict, model_path: str, seed: int):
         experiment_id = str(uuid.uuid4())
