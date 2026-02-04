@@ -2,6 +2,7 @@ import logging
 import numpy as np
 import time
 from fastapi import FastAPI, HTTPException, Query, status, Response, Depends
+from typing import Optional
 from pathlib import Path
 from src.model import LogisticRegression
 from src.preprocessing import Preprocessor
@@ -10,24 +11,34 @@ from src.tracking import ExperimentTracker
 
 app = FastAPI(title="Raisin Classification API")
 logger = logging.getLogger("uvicorn")
-def get_latest_model():
+def get_model_resource(seed: Optional[int] = None):
     base_path = Path(__file__).resolve().parent.parent / "models"
     model_files = list(base_path.glob("*.npz"))
 
     if not model_files:
         raise HTTPException(status_code=404, detail="No model files found in /models")
 
-    latest_model_path = max(model_files, key=lambda p: p.stat().st_mtime)
+    if seed is not None:
+        target_file = base_path / "model_{seed}.npz".format(seed=seed)
+        if not target_file.exists():
+            raise HTTPException(
+                status_code=404,
+                detail="No model found for seed {seed}".format(seed=seed)
+            )
+        model_path = target_file
+    else:
+        if not model_files:
+            return None
+        model_path = max(model_files, key=lambda p: p.stat().st_mtime)
 
     try:
-        return {"data": np.load(latest_model_path), "path": latest_model_path}
+        return {"data": np.load(model_path), "path": model_path}
     except Exception as e:
         logger.error("Latest model file not found. Error: {error}".format(error=(e)))
-        raise HTTPException(status_code=500, detail=f"Failed to load model")
-
+        raise HTTPException(status_code=500, detail="Failed to load model")
 
 @app.get("/health")
-def health_check(response: Response, model_resource: dict = Depends(get_latest_model)):
+def health_check(response: Response, model_resource: dict = Depends(get_model_resource)):
     if model_resource is None:
         logger.error("There is no model")
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -95,12 +106,13 @@ def train_model(response: Response, seed: int = Query(42, description="The rando
         }
 
     except Exception as e:
-        logger.error(f"Training failed: {str(e)}")
+        logger.error("Training failed: {error}".format(error=str(e)))
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
         return {"error": "Training failed", "details": str(e)}
 
 @app.get("/model/info")
-def get_model_info(model: dict = Depends(get_latest_model)):
+def get_model_info(seed: Optional[int] = None):
+    model = get_model_resource(seed=seed)
     model_data = model["data"]
 
     return {
