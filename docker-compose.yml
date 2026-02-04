@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    container_name: raisin_mlops_service
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./models:/app/models
+      - ./experiments:/app/experiments
+      - ./data:/app/data
+    environment:
+      - ENV=development
+      - PYTHONUNBUFFERED=1
+    restart: always
