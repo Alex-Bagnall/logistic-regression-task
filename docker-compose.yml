@@ -6,10 +6,9 @@ services:
     container_name: raisin_mlops_service
     ports:
       - "8000:8000"
+    working_dir: /app
     volumes:
-      - ./models:/app/models
-      - ./experiments:/app/experiments
-      - ./data:/app/data
+        - .:/app
     environment:
       - ENV=development
       - PYTHONUNBUFFERED=1

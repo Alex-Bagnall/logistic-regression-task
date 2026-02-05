@@ -84,7 +84,17 @@ The ExperimentTracker ensures that every training run is documented by saving th
 <details>
     <summary>api.py</summary>
 
-This file sets up the API of the application by leveraging FastAPI. The method `get_model_resource` is used to get the latest model or get a selected model.
+This file sets up the API of the application by leveraging FastAPI. The method `get_model_resource` is used to get the latest model or get a selected model. 
+There are also a number of endpoints available:
+* GET `/health`
+  * `/health` - Returns a status of ok
+  * `/model/info` - Returns a list of the weights, bias, and normalised mean & standard deviation used for each feature for a specific model, if no seed is input it will use the latest model that has been trained
+  * `/models` - Returns a list of all models
+  * `/explain` - Returns a ranked list of the features used from most important to least important, a seed can be input to choose a model but if left empty it will default to the latest model
+  * `/experiments/best` - Returns the experiment information which performed best in one of the following chosen metrics: accuracy, precision, recall, f1
+* POST
+  * `/train` - Allows the user to train the model and input a seed, if no seed is input it will default to 42
+  * `/predict` - Takes in float values for the features and allows the user to select a seed that has already been run
 </details>
 
 
