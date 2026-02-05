@@ -215,13 +215,13 @@ def explain(seed: Optional[int] = None):
         "model_used": model["path"].name,
         "feature_importance": [
             {
-                "rank": featureRank + 1,
+                "rank": feature_rank + 1,
                 "feature": name,
                 "weight": round(weight, 4),
                 "direction": "Besni" if weight > 0 else "Kecimen",
                 "impact": "high" if abs(weight) > 1 else "medium" if abs(weight) > 0.5 else "low"
             }
-            for featureRank, (name, weight) in enumerate(feature_importance)
+            for feature_rank, (name, weight) in enumerate(feature_importance)
         ]
     }
 
