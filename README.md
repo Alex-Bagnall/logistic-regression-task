@@ -5,6 +5,14 @@ This was written using the [Raisin binary classification dataset](https://www.ka
 ## How to run the app
 Simply run `docker compose up --build` in the project root and the app will start on port 8000
 
+### In case of emergency
+If you find that the container starts but you still can't see the models, it might be due to cached volumes. If you changed your folder structure after running Docker for the first time, Docker sometimes holds onto an old, empty version of that volume.
+
+If things get weird, run this to "nuke" the cache and start fresh:
+```bash
+docker compose down -v && docker compose up --build
+```
+
 ## API
 The project includes a FastAPI wrapper that serves the model for real-time inference and remote training.
 
@@ -14,13 +22,12 @@ For documentation access go to: http://127.0.0.1:8000/docs to test the endpoints
 
 Trained models and experiment logs are automatically synced between the container and your local `./models` and `./experiments` folders.
 
-## In case of emergency
-If you find that the container starts but you still can't see the models, it might be due to cached volumes. If you changed your folder structure after running Docker for the first time, Docker sometimes holds onto an old, empty version of that volume.
-
-If things get weird, run this to "nuke" the cache and start fresh:
+## Testing
+Run tests with:
 ```bash
-docker compose down -v && docker compose up --build
+pytest tests/ -v
 ```
+
 ## Explanation of files
 <details>
     <summary>data_loader.py</summary>
